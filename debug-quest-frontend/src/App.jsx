@@ -46,6 +46,8 @@ function App() {
 
       <div>
         <button onClick={() => fetchQuestion("easy")}>Easy</button>
+        <button onClick={() => fetchQuestion("Medium")}>Medium</button>
+        <button onClick={() => fetchQuestion("Hard")}>Hard</button>
       </div>
 
       {loading && <p>Loading...</p>}

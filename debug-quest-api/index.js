@@ -11,32 +11,69 @@ app.use(express.json());     // important for POST body parsing
 const questions = {
   easy: {
     id: 1,
-    title: "Sum Function Bug",
+    title: "Area Calculation Bug",
     language: "Python",
-    code: "def calculate_area(radius):\narea = 3.14 * r ** 2\nprint(\"Area is: \" + area)\n\ncalculatearea(5)",
-    expected: "Should return sum of a and b"
+    code: `def calculate_area(radius):
+area = 3.14 * r ** 2
+print("Area is: " + area)
+
+calculatearea(5)`,
+    expected: "Should print the area of the circle correctly"
   },
   medium: {
     id: 2,
-    title: "Loop Logic Error",
-    language: "JavaScript",
-    code: "for(let i = 0; i <= 5; i++) {\n  console.log(i * i);\n}",
-    expected: "Should print square of numbers 1 to 5"
+    title: "Factorial Logic Error",
+    language: "Python",
+    code: `def factorial(n):
+    result = 1
+    for i in range(n):
+        result *= i
+    return result
+
+print(factorial(5))`,
+    expected: "Should print factorial of 5"
   },
   hard: {
     id: 3,
-    title: "Fibonacci Fault",
-    language: "C",
-    code: "#include <stdio.h>\nvoid fib(int n) {\n int a=0, b=1, c;\n for(int i=2;i<n;i++){\n  c=a+b;\n  a=b;\n  b=c;\n }\n printf(\"%d\", c);\n}",
-    expected: "Should print all n Fibonacci numbers"
+    title: "Fibonacci Sequence Bug",
+    language: "Python",
+    code: `def fibonacci(n):
+    a, b = 0, 1
+    for i in range(n):
+        a = b
+        b = a + b
+    print(b)
+
+fibonacci(5)`,
+    expected: "Should print first n Fibonacci numbers"
   }
 };
 
+
 const correctAnswers = {
-  1: "def calculate_area(radius):\n    area = 3.14 * radius ** 2\n    print(\"Area is: \" + str(area))\n\ncalculate_area(5)",
-  2: "print('Hello, World!')",
-  3: "def square(n):\n    return n * n"
+  1: `def calculate_area(radius):
+    area = 3.14 * radius ** 2
+    print("Area is: " + str(area))
+
+calculate_area(5)`,
+
+  2: `def factorial(n):
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+
+print(factorial(5))`,
+
+  3: `def fibonacci(n):
+    a, b = 0, 1
+    for i in range(n):
+        print(a)
+        a, b = b, a + b
+
+fibonacci(5)`
 };
+
 
 
 // Endpoints

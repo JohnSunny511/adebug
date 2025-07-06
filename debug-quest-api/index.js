@@ -13,7 +13,7 @@ const questions = {
     id: 1,
     title: "Sum Function Bug",
     language: "Python",
-    code: "def add(a, b):\n    return a - b",
+    code: "def calculate_area(radius):\narea = 3.14 * r ** 2\nprint(\"Area is: \" + area)\n\ncalculatearea(5)",
     expected: "Should return sum of a and b"
   },
   medium: {
@@ -33,7 +33,7 @@ const questions = {
 };
 
 const correctAnswers = {
-  1: "def add(a, b):\n    return a + b",
+  1: "def calculate_area(radius):\n    area = 3.14 * radius ** 2\n    print(\"Area is: \" + str(area))\n\ncalculate_area(5)",
   2: "print('Hello, World!')",
   3: "def square(n):\n    return n * n"
 };

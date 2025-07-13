@@ -13,17 +13,17 @@ function App() {
 
 
   const fetchQuestion = async (level) => {
-  setLoading(true);
-  try {
-    const res = await axios.get(`http://localhost:5000/api/${level}`);
-    setOriginalCode(res.data.code); // save original
-    setQuestion(res.data);
-  } catch (err) {
-    console.error("Error fetching question:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const res = await axios.get(`http://localhost:5000/api/${level}`);
+      setOriginalCode(res.data.code); // save original
+      setQuestion(res.data);
+    } catch (err) {
+      console.error("Error fetching question:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const submitCode = async () => {
     try {
@@ -46,8 +46,9 @@ function App() {
 
       <div>
         <button onClick={() => fetchQuestion("easy")}>Easy</button>
-        <button onClick={() => fetchQuestion("Medium")}>Medium</button>
-        <button onClick={() => fetchQuestion("Hard")}>Hard</button>
+        <button onClick={() => fetchQuestion("medium")}>Medium</button>
+        <button onClick={() => fetchQuestion("hard")}>Hard</button>
+
       </div>
 
       {loading && <p>Loading...</p>}
@@ -57,17 +58,17 @@ function App() {
           <h2>{question.title}</h2>
           <p><strong>Language:</strong> {question.language}</p>
           <textarea
-  rows={10}
-  style={{ width: "100%", fontFamily: "monospace", fontSize: "14px" }}
-  value={question.code}
-  onChange={(e) => {
-    const newCode = e.target.value;
-    const changeNum = countChanges(originalCode, newCode,question.language);
-    setChangeCount(changeNum);
+            rows={10}
+            style={{ width: "100%", fontFamily: "monospace", fontSize: "14px" }}
+            value={question.code}
+            onChange={(e) => {
+              const newCode = e.target.value;
+              const changeNum = countChanges(originalCode, newCode, question.language);
+              setChangeCount(changeNum);
 
-    setQuestion((prev) => ({ ...prev, code: newCode }));
-  }}
-/>
+              setQuestion((prev) => ({ ...prev, code: newCode }));
+            }}
+          />
 
           <button onClick={submitCode} style={{ marginTop: '10px' }}>Submit</button>
 

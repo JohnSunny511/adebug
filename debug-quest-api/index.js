@@ -3,6 +3,18 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const PORT = 5000;
+const mongoose = require('mongoose');
+const Question = require('./models/question');
+
+mongoose.connect('mongodb://127.0.0.1:27017/debug-quest', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log("✅ Connected to MongoDB");
+}).catch((err) => {
+  console.error("❌ MongoDB connection error:", err);
+});
+
 
 app.use(cors());             // Allows frontend to access the API
 app.use(express.json());     // important for POST body parsing
@@ -77,39 +89,44 @@ fibonacci(5)`
 
 
 // Endpoints
-app.get('/api/easy', (req, res) => {
-  res.json(questions.easy);
-});
-
-app.get('/api/medium', (req, res) => {
-  res.json(questions.medium);
-});
-
-app.get('/api/hard', (req, res) => {
-  res.json(questions.hard);
-});
-
-app.post('/api/submit', (req, res) => {
-  const { id, code } = req.body;
-
-  const expected = correctAnswers[id];
-
-  // Normalize by trimming whitespace
-  const normalize = (str) =>
-    str.replace(/\r/g, "").trim(); // remove carriage returns and trim
-
-  const isCorrect = normalize(code) === normalize(expected);
-
-  if (isCorrect) {
-    res.json({ passed: true, message: "✅ Code is correct!" });
-  } else {
-    res.json({
-      passed: false,
-      message: "❌ Code is incorrect.",
-      correctAnswer: expected
-    });
+app.get('/api/:level', async (req, res) => {
+  const { level } = req.params;
+  try {
+    const question = await Question.findOne({ level });
+    res.json(question);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
   }
 });
+;
+
+app.post('/api/submit', async (req, res) => {
+  const { id, code } = req.body;
+
+  try {
+    const question = await Question.findOne({ id });
+    if (!question) {
+      return res.status(404).json({ error: "Question not found" });
+    }
+
+    const normalize = (str) => str.replace(/\r/g, "").trim();
+
+    const isCorrect = normalize(code) === normalize(question.correctAnswer);
+
+    if (isCorrect) {
+      res.json({ passed: true, message: "✅ Code is correct!" });
+    } else {
+      res.json({
+        passed: false,
+        message: "❌ Code is incorrect.",
+        correctAnswer: question.correctAnswer
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 
 

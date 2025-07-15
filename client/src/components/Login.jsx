@@ -12,14 +12,19 @@ function Login() {
         password,
       });
 
-      const token = res.data.token;
-      localStorage.setItem("token", token); // ✅ Store token
+      localStorage.setItem("token", res.data.token); // ✅ Store token
+      localStorage.setItem("username", username);    // ✅ Store username
+
       alert("Login successful!");
       window.location.href = "/"; // Redirect to home (App)
     } catch (err) {
       alert("Login failed: " + err.response?.data?.message);
     }
   };
+
+
+  
+
 
   const containerStyle = {
     display: "flex",

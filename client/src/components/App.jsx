@@ -1,6 +1,4 @@
-//App.jsx
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import '../App.css';
 import { countChanges } from '../utils/countCodeChanges';
@@ -8,30 +6,36 @@ import Editor from "@monaco-editor/react";
 import { executePythonCode } from '../utils/executeCode';
 import { Link } from "react-router-dom";
 
-
-
-
-
 function App() {
     const [question, setQuestion] = useState(null);
     const [loading, setLoading] = useState(false);
     const [changeCount, setChangeCount] = useState(0);
-    const [originalCode, setOriginalCode] = useState(""); // store initial buggy code
+    const [originalCode, setOriginalCode] = useState("");
     const [output, setOutput] = useState("");
+    const [username, setUsername] = useState("");
+
+    // ✅ CORRECT: placed outside any function, at top level
+    useEffect(() => {
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) setUsername(storedUsername);
+    }, []);
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.href = "/login";
+    };
 
     const runCode = async () => {
         const result = await executePythonCode(question.code);
-        setOutput(result); // Now result includes actual errors or output
+        setOutput(result);
     };
-
-
-
 
     const fetchQuestion = async (level) => {
         setLoading(true);
         try {
             const res = await axios.get(`http://localhost:5000/api/${level}`);
-            setOriginalCode(res.data.code); // save original
+            setOriginalCode(res.data.code);
             setQuestion(res.data);
         } catch (err) {
             console.error("Error fetching question:", err);
@@ -42,29 +46,41 @@ function App() {
 
     const submitCode = async () => {
         try {
+            const token = localStorage.getItem("token");
+
             const res = await axios.post('http://localhost:5000/api/submit', {
                 id: question.id,
                 code: question.code,
                 language: question.language
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
 
-            alert(res.data.message); // show success or result from backend
+            alert(res.data.message);
         } catch (err) {
             console.error("Submission failed:", err);
             alert("Submission failed.");
         }
     };
-    <Link to="/signup">Signup</Link>
+
+
+
+
 
     return (
         <div className="App">
+            <div style={{ textAlign: "right", marginRight: "20px" }}>
+                👋 Welcome, <strong>{username}</strong>{" "}
+                <button onClick={logout}>Logout</button>
+            </div>
             <h1>🧠 Debug Quest</h1>
 
             <div>
                 <button onClick={() => fetchQuestion("easy")}>Easy</button>
                 <button onClick={() => fetchQuestion("medium")}>Medium</button>
                 <button onClick={() => fetchQuestion("hard")}>Hard</button>
-
             </div>
 
             {loading && <p>Loading...</p>}
@@ -89,16 +105,12 @@ function App() {
                     <button onClick={runCode}>▶️ Run Code</button>
                     <pre><strong>Output:</strong><br />{output}</pre>
 
-
                     <p><strong>Expected:</strong> {question.expected}</p>
                     <p><strong>Changes made:</strong> {changeCount}</p>
-
                 </div>
             )}
         </div>
     );
-
 }
 
 export default App;
-

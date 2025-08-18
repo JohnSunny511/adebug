@@ -3,7 +3,7 @@ import axios from "axios";
 import '../App.css';
 import { countChanges } from '../utils/countCodeChanges';
 import Editor from "@monaco-editor/react";
-import { executePythonCode } from '../utils/executeCode';
+import { executeCode } from "../utils/executeCode";
 import { Link } from "react-router-dom";
 
 function App() {
@@ -27,9 +27,21 @@ function App() {
     };
 
     const runCode = async () => {
-        const result = await executePythonCode(question.code);
-        setOutput(result);
+        if (!question?.code?.trim()) {
+            setOutput("No code to run.");
+            return;
+        }
+
+        try {
+            const result = await executeCode(question.language, question.code);
+            setOutput(result);
+        } catch (err) {
+            setOutput("❌ Error running code.");
+            console.error(err);
+        }
     };
+
+
 
     const fetchQuestion = async (level) => {
         setLoading(true);
@@ -114,3 +126,6 @@ function App() {
 }
 
 export default App;
+
+
+

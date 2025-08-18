@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const login = async () => {
     try {
@@ -11,19 +13,15 @@ function Login() {
         username,
         password,
       });
-
-      localStorage.setItem("token", res.data.token); // ✅ Store token
-      localStorage.setItem("username", username);    // ✅ Store username
-
-      alert("Login successful!");
-      window.location.href = "/"; // Redirect to home (App)
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", username); // 👈 ADD THIS LINE
+      navigate("/");
     } catch (err) {
-      alert("Login failed: " + err.response?.data?.message);
+      console.error("Login error:", err);
+      const msg = err.response?.data?.message || err.message || "Unknown error";
+      alert("Login failed: " + msg);
     }
   };
-
-
-  
 
 
   const containerStyle = {
@@ -58,10 +56,16 @@ function Login() {
     padding: "0.8rem",
     border: "none",
     borderRadius: "4px",
-    backgroundColor: "#28a745",
+    backgroundColor: "#007bff",
     color: "#fff",
     fontSize: "1rem",
     cursor: "pointer",
+  };
+
+  const linkStyle = {
+    textAlign: "center",
+    marginTop: "1rem",
+    fontSize: "0.9rem",
   };
 
   return (
@@ -84,6 +88,9 @@ function Login() {
         <button style={buttonStyle} onClick={login}>
           Login
         </button>
+        <div style={linkStyle}>
+          Don’t have an account? <Link to="/signup">Signup here</Link>
+        </div>
       </form>
     </div>
   );

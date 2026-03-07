@@ -1,12 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { getQuestionByLevel, submitCodeAnswer } = require('../controllers/questionController');
-const { authenticateUser } = require('../middleware/authMiddleware');
-const { submitHandler } = require('../controllers/questionController');
+const {
+  getQuestionsByLevel,
+  getQuestionByLevel,
+  submitHandler
+} = require("../controllers/questionController");
+const { authenticateUser } = require("../middleware/authMiddleware");
 
+// GET all questions by level
+// /api/questions/easy
+router.get("/:level", getQuestionsByLevel);
 
-router.get('/:level', getQuestionByLevel);
-router.post('/submit', authenticateUser, submitHandler);
+// GET single question by level + id
+// /api/questions/easy/1
+router.get("/:level/:id", getQuestionByLevel);
 
+// POST submit code
+// /api/questions/submit
+router.post("/submit", authenticateUser, submitHandler);
 
 module.exports = router;

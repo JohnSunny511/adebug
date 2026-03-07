@@ -1,10 +1,14 @@
-//authRoutes.js
+// routes/authRoutes.js (MUST look like this)
+const express = require("express");
+const { signup, login } = require("../controllers/authController"); // <-- MUST BE IMPORTED
+const { googleLogin } = require("../controllers/googleAuthController");
 
-const express = require('express');
 const router = express.Router();
-const { signup, login } = require('../controllers/authController');
 
-router.post('/signup', signup);
-router.post('/login', login);
+// 🛑 THESE TWO ROUTES ARE CRITICAL AND MUST BE PRESENT
+router.post("/signup", signup); 
+router.post("/login", login); 
+
+router.post("/google-login", googleLogin); 
 
 module.exports = router;

@@ -1,14 +1,20 @@
-//index.js in server
+//index.js
+
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+require('dotenv').config();
+const session = require("cookie-session");
 
+
+// Routes
 const questionRoutes = require('./routes/questionRoutes');
 const authRoutes = require('./routes/authRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
-const aiRoutes = require('./routes/aiRoutes'); // ✅ require instead of import
-
+const aiRoutes = require('./routes/aiRoutes');
 const { authenticateUser } = require('./middleware/authMiddleware');
+
+// DB connection
+const connectDB = require('./config/db');  // ✅ import db.js
 
 const app = express();
 const PORT = 5000;
@@ -16,22 +22,16 @@ const PORT = 5000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(session({ secret: "secretkey", resave: false, saveUninitialized: false }));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
-app.use('/api/ai', aiRoutes); // ✅ now after app is created
-app.use('/api', questionRoutes);
+app.use('/api/ai', aiRoutes);
+app.use("/api/questions", questionRoutes); 
 
-// MongoDB connection
-mongoose.connect('mongodb://127.0.0.1:27017/debug-quest', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("✅ Connected to MongoDB");
-}).catch((err) => {
-  console.error("❌ MongoDB connection error:", err);
-});
+// Connect DB
+connectDB(); // ✅ call here
 
 // Start server
 app.listen(PORT, () => {

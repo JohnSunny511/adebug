@@ -1,15 +1,15 @@
-const mongoose = require('mongoose');
-const Question = require('./models/question');
+// seed.js
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const connectDB = require("../config/db");
+const Question = require("../models/Question");
 
-mongoose.connect('mongodb://127.0.0.1:27017/debug-quest', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+dotenv.config(); // load .env
 
 const questions = [
   {
     id: 1,
-    level: 'easy',
+    level: "easy",
     title: "Area Calculation Bug",
     language: "Python",
     code: `def calculate_area(radius):
@@ -22,11 +22,11 @@ calculatearea(5)`,
     area = 3.14 * radius ** 2
     print("Area is: " + str(area))
 
-calculate_area(5)`
+calculate_area(5)`,
   },
   {
     id: 2,
-    level: 'medium',
+    level: "medium",
     title: "Factorial Logic Error",
     language: "Python",
     code: `def factorial(n):
@@ -43,11 +43,11 @@ print(factorial(5))`,
         result *= i
     return result
 
-print(factorial(5))`
+print(factorial(5))`,
   },
   {
     id: 3,
-    level: 'hard',
+    level: "hard",
     title: "Fibonacci Sequence Bug",
     language: "Python",
     code: `def fibonacci(n):
@@ -65,15 +65,21 @@ fibonacci(5)`,
         print(a)
         a, b = b, a + b
 
-fibonacci(5)`
-  }
+fibonacci(5)`,
+  },
 ];
 
-async function seedDB() {
-  await Question.deleteMany({});
-  await Question.insertMany(questions);
-  console.log("✅ Sample questions inserted");
-  mongoose.connection.close();
-}
+const seedDB = async () => {
+  try {
+    await connectDB(); // connect to MongoDB
+    await Question.deleteMany({});
+    await Question.insertMany(questions);
+    console.log("✅ Sample questions inserted");
+    process.exit();
+  } catch (err) {
+    console.error("❌ Error seeding DB:", err);
+    process.exit(1);
+  }
+};
 
 seedDB();

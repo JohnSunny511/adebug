@@ -1,6 +1,8 @@
+//authMiddleware.js
+
 const jwt = require("jsonwebtoken");
 
-const SECRET = "debug_quest_secret"; // same one used in authController
+const SECRET = process.env.JWT_SECRET;  // same one used in authController
 
 exports.authenticateUser = (req, res, next) => {
   const authHeader = req.headers.authorization;

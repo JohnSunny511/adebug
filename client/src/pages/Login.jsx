@@ -1,29 +1,54 @@
+// src/pages/Login.jsx (Combined Authentication Page)
+
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google"; // Import GoogleLogin
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const login = async () => {
+  // ------------------------------------
+  // 1. TRADITIONAL LOGIN LOGIC
+  // ------------------------------------
+  const handleTraditionalLogin = async () => {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", {
         username,
         password,
       });
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", username); // 👈 ADD THIS LINE
+      localStorage.setItem("username", username); // Set username on successful traditional login
       navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Traditional Login error:", err);
       const msg = err.response?.data?.message || err.message || "Unknown error";
       alert("Login failed: " + msg);
     }
   };
 
+  // ------------------------------------
+  // 2. GOOGLE LOGIN LOGIC
+  // ------------------------------------
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/google-login", {
+        token: credentialResponse.credential,
+      });
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
+      navigate("/");
+    } catch (err) {
+      console.error("Google login error:", err);
+      alert("Google login failed");
+    }
+  };
 
+  // ------------------------------------
+  // 3. STYLES (Consolidated)
+  // ------------------------------------
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
@@ -67,11 +92,23 @@ function Login() {
     marginTop: "1rem",
     fontSize: "0.9rem",
   };
+  
+  const separatorStyle = {
+      textAlign: 'center',
+      margin: '1rem 0',
+      color: '#aaa',
+      fontSize: '0.9rem',
+  };
 
+  // ------------------------------------
+  // 4. RENDER UI
+  // ------------------------------------
   return (
     <div style={containerStyle}>
       <form style={formStyle} onSubmit={(e) => e.preventDefault()}>
         <h2 style={{ textAlign: "center" }}>Login</h2>
+        
+        {/* Traditional Form Inputs */}
         <input
           style={inputStyle}
           value={username}
@@ -85,12 +122,23 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
         />
-        <button style={buttonStyle} onClick={login}>
+        <button style={buttonStyle} onClick={handleTraditionalLogin}>
           Login
         </button>
+
+        {/* Signup Link */}
         <div style={linkStyle}>
           Don’t have an account? <Link to="/signup">Signup here</Link>
         </div>
+
+        {/* Separator */}
+        <div style={separatorStyle}>— OR —</div>
+
+        {/* Google Login Button */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoogleLogin onSuccess={handleGoogleLogin} onError={() => console.log("Login Failed")} />
+        </div>
+        
       </form>
     </div>
   );

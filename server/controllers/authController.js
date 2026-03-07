@@ -3,7 +3,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-const SECRET = 'debug_quest_secret'; // In production, use dotenv
+const SECRET = process.env.JWT_SECRET; 
 
 exports.signup = async (req, res) => {
   const { username, password } = req.body;

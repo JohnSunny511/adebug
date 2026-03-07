@@ -11,10 +11,7 @@ function QuestionsList() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-       const res = await axios.get(`http://localhost:5000/api/questions/${level}`);
-
-
-
+        const res = await axios.get(`http://localhost:5000/api/questions/${level}`);
         setQuestions(res.data);
       } catch (err) {
         console.error("Error fetching questions:", err);
@@ -25,25 +22,59 @@ function QuestionsList() {
     fetchQuestions();
   }, [level]);
 
-  if (loading) return <p className="text-center text-gray-400">Loading {level} questions...</p>;
+  if (loading) return <p style={{ textAlign: "center", color: "#94a3b8" }}>Loading {level} questions...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center p-6">
-      <h1 className="text-4xl font-bold mb-6 capitalize">{level} Questions</h1>
-      
+    <div style={{
+      minHeight: "100vh",
+      background: "#0f172a",
+      color: "#f1f5f9",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "2rem",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    }}>
+      <h1 style={{
+        fontSize: "2.5rem",
+        fontWeight: "bold",
+        marginBottom: "2rem",
+        textTransform: "capitalize",
+        color: "#f8fafc"
+      }}>
+        {level} Questions
+      </h1>
+
       {questions.length === 0 ? (
-        <p>No questions found.</p>
+        <p style={{ color: "#94a3b8", fontSize: "1rem" }}>No questions found.</p>
       ) : (
-        <ul className="space-y-4 w-full max-w-3xl">
+        <ul style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "100%", maxWidth: "700px" }}>
           {questions.map((q) => (
-            <li
-              key={q._id}
-              className="bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition"
+            <li key={q._id} style={{
+              backgroundColor: "#1e293b",
+              padding: "1rem 1.5rem",
+              borderRadius: "0.5rem",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
+              cursor: "pointer"
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#334155"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1e293b"}
             >
-              <Link to={`/${level}/${q.id}`} className="text-blue-400 hover:underline text-lg font-semibold">
+              <Link to={`/${level}/${q.id}`} style={{
+                color: "#3b82f6",
+                fontSize: "1.125rem",
+                fontWeight: "600",
+                textDecoration: "none"
+              }}
+              onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+              onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
+              >
                 {q.title}
               </Link>
-              <p className="text-gray-400 text-sm mt-1">Language: {q.language}</p>
+              <p style={{ color: "#94a3b8", fontSize: "0.875rem", marginTop: "0.25rem" }}>
+                Language: {q.language}
+              </p>
             </li>
           ))}
         </ul>

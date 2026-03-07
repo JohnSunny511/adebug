@@ -1,13 +1,14 @@
 // executeCode.js
 import axios from "axios";
 
-const LANGUAGE_CONFIG = {
-  python: { pistonLang: "python3", ext: "py" },
-  javascript: { pistonLang: "javascript", ext: "js" },
-  c: { pistonLang: "c", ext: "c" },
+// Judge0 language IDs
+const LANGUAGE_MAP = {
+  python: 71,
+  javascript: 63,
+  c: 50
 };
 
-// map possible aliases → your config keys
+// normalize dropdown language names
 const normalizeLanguage = (lang) => {
   if (!lang) return "python";
   const lower = lang.toLowerCase();
@@ -16,30 +17,26 @@ const normalizeLanguage = (lang) => {
   if (["js", "node", "nodejs"].includes(lower)) return "javascript";
   if (["c99", "gcc"].includes(lower)) return "c";
 
-  return lower; // if already "python", "javascript", or "c"
+  return lower;
 };
 
 export async function executeCode(language, code) {
   const normalizedLang = normalizeLanguage(language);
-  const config = LANGUAGE_CONFIG[normalizedLang];
+  const language_id = LANGUAGE_MAP[normalizedLang];
 
-  if (!config) {
+  if (!language_id) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
   try {
-    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
-      language: config.pistonLang,
-      version: "*",
-      files: [
-        {
-          name: `main.${config.ext}`,
-          content: code,
-        },
-      ],
+    // 🔥 call YOUR backend instead of RapidAPI
+    const response = await axios.post("http://localhost:5000/api/execute", {
+      language_id,
+      code,
     });
 
-    return response.data.run.output || "";
+    return response.data.output;
+
   } catch (err) {
     console.error("Execution error:", err.response?.data || err.message);
     throw new Error("Failed to execute code.");

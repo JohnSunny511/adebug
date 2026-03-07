@@ -36,6 +36,18 @@ function countCodeChangesC(original, modified) {
   return computeChanges(origTokens, modTokens);
 }
 
+// Plain text change counter (for admin-added text questions)
+function countCodeChangesText(original, modified) {
+  const normalize = (str) => String(str ?? "").replace(/\r/g, "").trim();
+
+  const tokenize = (text) =>
+    normalize(text).match(/[a-zA-Z0-9_]+|[^\s]/g) || [];
+
+  const origTokens = tokenize(original);
+  const modTokens = tokenize(modified);
+  return computeChanges(origTokens, modTokens);
+}
+
 // LCS diff core logic
 function computeChanges(origTokens, modTokens) {
   const m = origTokens.length;
@@ -83,6 +95,9 @@ export function countChanges(original, modified, language) {
       return countCodeChangesPython(original, modified);
     case "c":
       return countCodeChangesC(original, modified);
+    case "text":
+    case "plaintext":
+      return countCodeChangesText(original, modified);
     default:
       console.warn("Unsupported language:", language);
       return -1;

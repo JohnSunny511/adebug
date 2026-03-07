@@ -8,6 +8,7 @@ const QuestionSchema = new mongoose.Schema({
   expected: String,
   level: { type: String, enum: ['easy', 'medium', 'hard'] },
   correctAnswer: String,
+  source: { type: String, enum: ['seed', 'admin'], default: 'seed' },
 });
 
 module.exports = mongoose.model('Question', QuestionSchema);

@@ -12,6 +12,8 @@ const questionRoutes = require('./routes/questionRoutes');
 const authRoutes = require('./routes/authRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const chatbotAdminRoutes = require("./routes/chatbotAdminRoutes");
+const adminQuestionRoutes = require("./routes/adminQuestionRoutes");
 const { authenticateUser } = require('./middleware/authMiddleware');
 
 // DB connection
@@ -30,6 +32,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use("/api/questions", questionRoutes); 
+app.use("/api/chatbot", chatbotAdminRoutes);
+app.use("/api/admin/questions", adminQuestionRoutes);
 
 // Connect DB
 connectDB(); // ✅ call here

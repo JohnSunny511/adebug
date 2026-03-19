@@ -79,15 +79,48 @@ function Challenges() {
         { name: "easy", color: "#10b981", icon: "🟢", tasks: ["5 Questions", "Python/JS", "Basic Debugging"] },
         { name: "medium", color: "#f59e0b", icon: "🟡", tasks: ["5 Questions", "Python/JS", "Intermediate Debugging"] },
         { name: "hard", color: "#ef4444", icon: "🔴", tasks: ["5 Questions", "Python/JS", "Advanced Debugging"] },
+        { name: "ai", route: "/buggy", tasks: ["AI Questions", "Python/JS/C", "Dynamic Bug Fixing"] },
     ];
 
     return (
         <div style={{ minHeight: "100vh", backgroundColor: "#1f2937", color: "white", padding: "20px", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-                <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>🧠 Debug Quest</h1>
+                <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}> Debug Quest</h1>
                 <div>
                     👋 <strong>{username}</strong>{" "}
+                    <button
+                        onClick={() => navigate("/leaderboard")}
+                        style={{
+                            backgroundColor: "#334155",
+                            color: "white",
+                            padding: "6px 10px",
+                            borderRadius: "6px",
+                            border: "none",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            fontSize: "0.85rem",
+                            marginRight: "8px",
+                        }}
+                    >
+                        Leaderboard
+                    </button>
+                    <button
+                        onClick={() => navigate("/learn")}
+                        style={{
+                            backgroundColor: "#0ea5e9",
+                            color: "white",
+                            padding: "6px 10px",
+                            borderRadius: "6px",
+                            border: "none",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            fontSize: "0.85rem",
+                            marginRight: "8px",
+                        }}
+                    >
+                        Learn
+                    </button>
                     <button
                         onClick={logout}
                         style={{ backgroundColor: "#ef4444", color: "white", padding: "6px 12px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "bold" }}
@@ -102,7 +135,7 @@ function Challenges() {
   {levels.map((lvl) => (
     <div
       key={lvl.name}
-      onClick={() => navigate(`/${lvl.name}`)}
+      onClick={() => navigate(lvl.route || `/${lvl.name}`)}
       style={{
         background: "linear-gradient(145deg, #1f1f2e, #11111e)",
         borderRadius: "20px",
@@ -162,7 +195,7 @@ function Challenges() {
       onMouseOver={(e) => e.currentTarget.style.boxShadow = "0 6px 20px rgba(139,92,246,0.7)"}
       onMouseOut={(e) => e.currentTarget.style.boxShadow = "0 4px 15px rgba(139,92,246,0.5)"}
       >
-        Start {lvl.name}
+        {lvl.route ? "Open AI" : `Start ${lvl.name}`}
       </button>
     </div>
   ))}

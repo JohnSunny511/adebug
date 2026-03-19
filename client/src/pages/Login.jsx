@@ -21,7 +21,7 @@ function Login() {
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", username); // Set username on successful traditional login
-      navigate("/");
+      navigate("/challenges");
     } catch (err) {
       console.error("Traditional Login error:", err);
       const msg = err.response?.data?.message || err.message || "Unknown error";
@@ -39,7 +39,7 @@ function Login() {
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
-      navigate("/");
+      navigate("/challenges");
     } catch (err) {
       console.error("Google login error:", err);
       alert("Google login failed");
@@ -128,11 +128,14 @@ function Login() {
 
         {/* Signup Link */}
         <div style={linkStyle}>
-          Don’t have an account? <Link to="/signup">Signup here</Link>
+          Don't have an account? <Link to="/signup">Signup here</Link>
         </div>
 
+        <div style={linkStyle}>
+          Need admin access? <Link to="/admin/questions">Go to Admin Page</Link>
+        </div>
         {/* Separator */}
-        <div style={separatorStyle}>— OR —</div>
+        <div style={separatorStyle}>--- OR ---</div>
 
         {/* Google Login Button */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -145,3 +148,4 @@ function Login() {
 }
 
 export default Login;
+

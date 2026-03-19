@@ -174,6 +174,7 @@ function QuestionDetail() {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: ".4rem",
+          paddingLeft: "clamp(56px, 10vw, 72px)",
         }}
       >
         <span>

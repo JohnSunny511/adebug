@@ -11,11 +11,11 @@ const { authenticateUser } = require("../middleware/authMiddleware");
 
 // GET all questions by level
 // /api/questions/easy
-router.get("/:level", getQuestionsByLevel);
+router.get("/:level", authenticateUser, getQuestionsByLevel);
 
 // GET single question by level + id
 // /api/questions/easy/1
-router.get("/:level/:id", getQuestionByLevel);
+router.get("/:level/:id", authenticateUser, getQuestionByLevel);
 
 // POST submit code
 // /api/questions/submit

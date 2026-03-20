@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 
 function Challenges() {
     const [question, setQuestion] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const loading = false;
     const [changeCount, setChangeCount] = useState(0);
-    const [originalCode, setOriginalCode] = useState("");
+    const originalCode = "";
     const [output, setOutput] = useState("");
     const [username, setUsername] = useState("");
 
@@ -35,22 +35,8 @@ function Challenges() {
         try {
             const result = await executeCode(question.language, question.code);
             setOutput(result);
-        } catch (err) {
+        } catch (_err) {
             setOutput("❌ Error running code.");
-            console.error(err);
-        }
-    };
-
-    const fetchQuestion = async (level) => {
-        setLoading(true);
-        try {
-            const res = await axios.get(`http://localhost:5000/api/questions/${level}`);
-            setOriginalCode(res.data.code);
-            setQuestion(res.data);
-        } catch (err) {
-            console.error("Error fetching question:", err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -58,9 +44,11 @@ function Challenges() {
         try {
             const token = localStorage.getItem("token");
 
-            const res = await axios.post('http://localhost:5000/api/submit', {
+            const res = await axios.post('http://localhost:5000/api/questions/submit', {
                 id: question.id,
                 code: question.code,
+                level: question.level,
+                questionId: question._id,
                 language: question.language
             }, {
                 headers: {
@@ -69,8 +57,7 @@ function Challenges() {
             });
 
             alert(res.data.message);
-        } catch (err) {
-            console.error("Submission failed:", err);
+        } catch (_err) {
             alert("Submission failed.");
         }
     };

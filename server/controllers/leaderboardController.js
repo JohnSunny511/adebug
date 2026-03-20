@@ -7,7 +7,7 @@ exports.getLeaderboard = async (req, res) => {
                             .limit(10); // top 10
 
     res.json(users);
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ message: "Error fetching leaderboard" });
   }
 };

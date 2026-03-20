@@ -5,9 +5,12 @@ function Leaderboard() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/leaderboard")
+    const token = localStorage.getItem("token");
+    axios.get("http://localhost:5000/api/leaderboard", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then(res => setUsers(res.data))
-      .catch(err => console.error("Failed to fetch leaderboard", err));
+      .catch(() => {});
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 // src/pages/QuestionDetail.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { countChanges } from "../utils/countCodeChanges";
@@ -8,6 +8,7 @@ import { executeCode } from "../utils/executeCode";
 
 function QuestionDetail() {
   const { level, id } = useParams();
+  const navigate = useNavigate();
   const [question, setQuestion] = useState(null);
   const [originalCode, setOriginalCode] = useState("");
   const [changeCount, setChangeCount] = useState(0);
@@ -54,11 +55,13 @@ function QuestionDetail() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/questions/${level}/${id}`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`http://localhost:5000/api/questions/${level}/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         setQuestion(res.data);
         setOriginalCode(res.data.code);
-      } catch (err) {
-        console.error("Error fetching question:", err);
+      } catch (_err) {
       }
     };
     fetchQuestion();
@@ -77,9 +80,8 @@ function QuestionDetail() {
     try {
       const result = await executeCode(question.language, question.code);
       setOutput(result);
-    } catch (err) {
+    } catch (_err) {
       setOutput("Error running code.");
-      console.error(err);
     }
   };
 
@@ -100,8 +102,7 @@ function QuestionDetail() {
         }
       );
       alert(res.data.message);
-    } catch (err) {
-      console.error("Submission failed:", err);
+    } catch (_err) {
       alert("Submission failed.");
     }
   };
@@ -116,10 +117,15 @@ function QuestionDetail() {
     setChatLoading(true);
 
     try {
-      const response = await fetch(
-        `http://localhost:8000/query?q=${encodeURIComponent(prompt)}`,
-        { method: "POST" }
-      );
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/chatbot/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ q: prompt }),
+      });
 
       if (!response.ok) {
         throw new Error(`Request failed: ${response.status}`);
@@ -136,13 +142,12 @@ function QuestionDetail() {
           : "";
 
       setChatMessages((prev) => [...prev, { role: "assistant", text: `${answer}${score}` }]);
-    } catch (err) {
-      console.error("Error calling /query:", err);
+    } catch (_err) {
       setChatMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: "Unable to reach the AI service. Make sure http://localhost:8000/query is running.",
+          text: "Unable to reach the AI service right now.",
         },
       ]);
     } finally {
@@ -193,6 +198,31 @@ function QuestionDetail() {
           onClick={logout}
         >
           Logout
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          paddingLeft: "clamp(56px, 10vw, 72px)",
+          marginBottom: "1rem",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => navigate("/leaderboard")}
+          style={{
+            border: "none",
+            borderRadius: "999px",
+            padding: "0.6rem 1rem",
+            background: "#2563eb",
+            color: "white",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
+          Leaderboard
         </button>
       </div>
 

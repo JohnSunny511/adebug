@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 
-const API_BASE = "http://localhost:5000/api/admin/questions";
+const API_BASE = "http://localhost:5000/api/dashboard/internal/questions";
 
 function AdminQuestionManager() {
   const [questionName, setQuestionName] = useState("");
@@ -31,7 +31,10 @@ function AdminQuestionManager() {
     setLoading(true);
     setStatusMessage("");
     try {
-      const response = await fetch(API_BASE);
+      const token = localStorage.getItem("token");
+      const response = await fetch(API_BASE, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await readResponseData(response);
       if (!response.ok) {
         throw new Error(
@@ -41,7 +44,6 @@ function AdminQuestionManager() {
       }
       setQuestions(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Unable to fetch questions.");
     } finally {
       setLoading(false);
@@ -82,9 +84,13 @@ function AdminQuestionManager() {
     setBusy(true);
     setStatusMessage("");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(API_BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       const data = await readResponseData(response);
@@ -96,7 +102,6 @@ function AdminQuestionManager() {
       await loadQuestions();
       setShowAddForm(false);
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Failed to add question.");
     } finally {
       setBusy(false);
@@ -109,13 +114,16 @@ function AdminQuestionManager() {
     setBusy(true);
     setStatusMessage("");
     try {
-      const response = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE}/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await readResponseData(response);
       if (!response.ok) throw new Error(data?.message || "Failed to delete question");
       setStatusMessage("Question removed.");
       await loadQuestions();
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Failed to delete question.");
     } finally {
       setBusy(false);

@@ -20,12 +20,11 @@ function Login() {
         password,
       });
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", username); // Set username on successful traditional login
-      navigate("/challenges");
+      localStorage.setItem("username", res.data.username || username);
+      navigate(res.data.redirectTo || "/challenges");
     } catch (err) {
-      console.error("Traditional Login error:", err);
-      const msg = err.response?.data?.message || err.message || "Unknown error";
-      alert("Login failed: " + msg);
+      const msg = err.response?.data?.message || "Invalid credentials";
+      alert(msg);
     }
   };
 
@@ -39,10 +38,10 @@ function Login() {
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
-      navigate("/challenges");
+      navigate(res.data.redirectTo || "/challenges");
     } catch (err) {
-      console.error("Google login error:", err);
-      alert("Google login failed");
+      const msg = err.response?.data?.message || "Login failed";
+      alert(msg);
     }
   };
 
@@ -130,16 +129,12 @@ function Login() {
         <div style={linkStyle}>
           Don't have an account? <Link to="/signup">Signup here</Link>
         </div>
-
-        <div style={linkStyle}>
-          Need admin access? <Link to="/admin/questions">Go to Admin Page</Link>
-        </div>
         {/* Separator */}
         <div style={separatorStyle}>--- OR ---</div>
 
         {/* Google Login Button */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <GoogleLogin onSuccess={handleGoogleLogin} onError={() => console.log("Login Failed")} />
+          <GoogleLogin onSuccess={handleGoogleLogin} onError={() => alert("Google login failed")} />
         </div>
         
       </form>

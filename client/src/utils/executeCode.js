@@ -29,16 +29,17 @@ export async function executeCode(language, code) {
   }
 
   try {
-    // 🔥 call YOUR backend instead of RapidAPI
+    const token = localStorage.getItem("token");
     const response = await axios.post("http://localhost:5000/api/execute", {
       language_id,
       code,
+    }, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
 
     return response.data.output;
 
-  } catch (err) {
-    console.error("Execution error:", err.response?.data || err.message);
+  } catch (_err) {
     throw new Error("Failed to execute code.");
   }
 }

@@ -4,20 +4,23 @@ import { useLocation, useNavigate } from "react-router-dom";
 function BackButton() {
   const navigate = useNavigate();
   const location = useLocation();
-  const hiddenRoutes = ["/", "/login", "/challenges", "/learn"];
+  const hiddenRoutes = ["/", "/login", "/challenges", "/learn", "/dashboard/internal"];
   const isHiddenRoute = hiddenRoutes.includes(location.pathname);
   const isBuggyRoute = location.pathname === "/buggy";
   const isQuestionDetailRoute = /^\/(easy|medium|hard)\/[^/]+$/.test(
     location.pathname
   );
-  const forceCornerRoute = isBuggyRoute || isQuestionDetailRoute;
+  const isInternalAdminDetailRoute =
+    location.pathname === "/dashboard/internal/questions" ||
+    location.pathname === "/dashboard/internal/chatbot";
+  const forceCornerRoute = isBuggyRoute || isQuestionDetailRoute || isInternalAdminDetailRoute;
   const buttonRef = useRef(null);
   const [buttonOffset, setButtonOffset] = useState({ top: "16px", left: "16px" });
 
   useLayoutEffect(() => {
     if (isHiddenRoute) return;
     if (forceCornerRoute) {
-      setButtonOffset({ top: "16px", left: "16px" });
+      setButtonOffset({ top: "18px", left: "12px" });
       return;
     }
 

@@ -1,20 +1,23 @@
 // src/pages/QuestionsList.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function QuestionsList() {
   const { level } = useParams(); // easy, medium, hard
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/questions/${level}`);
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`http://localhost:5000/api/questions/${level}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         setQuestions(res.data);
-      } catch (err) {
-        console.error("Error fetching questions:", err);
+      } catch (_err) {
       } finally {
         setLoading(false);
       }
@@ -35,15 +38,44 @@ function QuestionsList() {
       padding: "2rem",
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     }}>
-      <h1 style={{
-        fontSize: "2.5rem",
-        fontWeight: "bold",
-        marginBottom: "2rem",
-        textTransform: "capitalize",
-        color: "#f8fafc"
-      }}>
-        {level} Questions
-      </h1>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "700px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+          marginBottom: "2rem",
+        }}
+      >
+        <h1 style={{
+          fontSize: "2.5rem",
+          fontWeight: "bold",
+          margin: 0,
+          textTransform: "capitalize",
+          color: "#f8fafc"
+        }}>
+          {level} Questions
+        </h1>
+
+        <button
+          type="button"
+          onClick={() => navigate("/leaderboard")}
+          style={{
+            border: "none",
+            borderRadius: "999px",
+            padding: "0.7rem 1.15rem",
+            background: "#2563eb",
+            color: "white",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
+          Leaderboard
+        </button>
+      </div>
 
       {questions.length === 0 ? (
         <p style={{ color: "#94a3b8", fontSize: "1rem" }}>No questions found.</p>

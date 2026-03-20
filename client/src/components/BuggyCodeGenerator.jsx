@@ -25,16 +25,19 @@ export default function BuggyCodeGenerator() {
     setLoading(true);
 
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(AI_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ language: aiLanguage, topic: aiTopic }),
       });
 
       if (!res.ok) throw new Error("Failed to generate AI question");
 
       const data = await res.json();
-      console.log("AI generated data:", data);
 
       setQuestion({
         source: "AI",
@@ -46,7 +49,6 @@ export default function BuggyCodeGenerator() {
 
       setOriginalCode(data.buggyCode);
     } catch (error) {
-      console.error("Error generating AI question:", error);
       setSubmissionStatus("❌ Failed to generate AI question");
     } finally {
       setLoading(false);

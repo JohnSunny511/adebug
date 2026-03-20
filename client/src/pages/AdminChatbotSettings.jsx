@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-const API_BASE = "http://localhost:5000/api/chatbot";
+const API_BASE = "http://localhost:5000/api/dashboard/internal/chatbot";
 
 function AdminChatbotSettings() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -59,12 +59,14 @@ function AdminChatbotSettings() {
     setLoadingList(true);
     setStatusMessage("");
     try {
-      const response = await fetch(`${API_BASE}/list`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE}/list`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (!response.ok) throw new Error("Failed to load documents");
       const data = await response.json();
       setDocuments(extractDocuments(data));
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
       setStatusMessage("Unable to fetch stored documents.");
     } finally {
       setLoadingList(false);
@@ -84,8 +86,10 @@ function AdminChatbotSettings() {
     setBusy(true);
     setStatusMessage("");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/upload`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
       const data = await response.json();
@@ -94,7 +98,6 @@ function AdminChatbotSettings() {
       setSelectedFile(null);
       await loadDocuments();
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Upload failed.");
     } finally {
       setBusy(false);
@@ -108,9 +111,13 @@ function AdminChatbotSettings() {
     setBusy(true);
     setStatusMessage("");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/add`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ text }),
       });
       const data = await response.json();
@@ -119,7 +126,6 @@ function AdminChatbotSettings() {
       setManualText("");
       await loadDocuments();
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Failed to add text.");
     } finally {
       setBusy(false);
@@ -132,15 +138,16 @@ function AdminChatbotSettings() {
     setBusy(true);
     setStatusMessage("");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/delete/${encodeURIComponent(name)}`, {
         method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.detail || "Delete failed");
       setStatusMessage(`Deleted: ${name}`);
       await loadDocuments();
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Delete failed.");
     } finally {
       setBusy(false);
@@ -153,14 +160,15 @@ function AdminChatbotSettings() {
     setBusy(true);
     setStatusMessage("");
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/clear_history`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.detail || "Failed to clear memory");
       setStatusMessage("Chatbot memory cleared.");
     } catch (error) {
-      console.error(error);
       setStatusMessage(error.message || "Failed to clear memory.");
     } finally {
       setBusy(false);

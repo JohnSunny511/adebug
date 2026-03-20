@@ -1,4 +1,7 @@
 const Question = require("../models/Question");
+const mongoose = require("mongoose");
+const { z } = require("zod");
+const { sanitizeFreeText, sanitizeText } = require("../utils/security");
 
 const SUPPORTED_LANGUAGES = new Set(["python", "javascript", "c", "text"]);
 
@@ -68,26 +71,36 @@ exports.listAdminQuestions = async (_req, res) => {
       $or: [{ source: "admin" }, { language: "text" }],
     }).sort({ _id: -1 });
     return res.json(questions.map(toAdminQuestionShape));
-  } catch (error) {
-    console.error("Error listing admin questions:", error);
+  } catch (_error) {
     return res.status(500).json({ message: "Server error." });
   }
 };
 
 exports.createAdminQuestion = async (req, res) => {
-  const { questionName, questionText, answerText, expectedOutcome, difficulty, language } = req.body;
-
-  if (!questionName?.trim() || !questionText?.trim() || !answerText?.trim() || !difficulty) {
-    return res.status(400).json({
-      message: "questionName, questionText, answerText and difficulty are required.",
-    });
-  }
-
-  if (!["easy", "medium", "hard"].includes(difficulty)) {
-    return res.status(400).json({ message: "Difficulty must be easy, medium or hard." });
-  }
-
   try {
+    const parsed = z
+      .object({
+        questionName: z.string().min(1).max(120),
+        questionText: z.string().min(1).max(20000),
+        answerText: z.string().min(1).max(20000),
+        expectedOutcome: z.string().max(20000).optional().default(""),
+        difficulty: z.enum(["easy", "medium", "hard"]),
+        language: z.string().max(20).optional().default("text"),
+      })
+      .safeParse({
+        questionName: sanitizeText(req.body?.questionName, { maxLength: 120, allowNewlines: false }),
+        questionText: sanitizeFreeText(req.body?.questionText, { maxLength: 20000 }),
+        answerText: sanitizeFreeText(req.body?.answerText, { maxLength: 20000 }),
+        expectedOutcome: sanitizeFreeText(req.body?.expectedOutcome, { maxLength: 20000 }),
+        difficulty: sanitizeText(req.body?.difficulty, { maxLength: 10, allowNewlines: false }).toLowerCase(),
+        language: sanitizeText(req.body?.language, { maxLength: 20, allowNewlines: false }).toLowerCase(),
+      });
+
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0]?.message || "Invalid question payload." });
+    }
+
+    const { questionName, questionText, answerText, expectedOutcome, difficulty, language } = parsed.data;
     const selectedLanguage = normalizeLanguageForStorage(language, questionText);
     const lastQuestion = await Question.findOne({ level: difficulty }).sort({ id: -1 });
     const nextId = (lastQuestion?.id || 0) + 1;
@@ -105,14 +118,16 @@ exports.createAdminQuestion = async (req, res) => {
     });
 
     return res.status(201).json(toAdminQuestionShape(question));
-  } catch (error) {
-    console.error("Error creating admin question:", error);
+  } catch (_error) {
     return res.status(500).json({ message: "Server error." });
   }
 };
 
 exports.deleteAdminQuestion = async (req, res) => {
   const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid question id." });
+  }
 
   try {
     const deleted = await Question.findOneAndDelete({
@@ -124,8 +139,7 @@ exports.deleteAdminQuestion = async (req, res) => {
     }
 
     return res.json({ message: "Question deleted." });
-  } catch (error) {
-    console.error("Error deleting admin question:", error);
+  } catch (_error) {
     return res.status(500).json({ message: "Server error." });
   }
 };

@@ -1,5 +1,7 @@
 const Question = require("../models/Question");
 const User = require("../models/User");
+const mongoose = require("mongoose");
+const { z } = require("zod");
 
 function inferLanguageFromCode(value) {
   const text = String(value || "");
@@ -47,39 +49,70 @@ function withResolvedLanguage(question) {
 
 // GET /api/questions/:level
 exports.getQuestionsByLevel = async (req, res) => {
-  const { level } = req.params;
   try {
+    const parsed = z.object({ level: z.enum(["easy", "medium", "hard"]) }).safeParse(req.params);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid level" });
+    }
+
+    const { level } = parsed.data;
     const questions = await Question.find({ level });
     if (!questions.length) {
       return res.status(404).json({ error: "No questions found for this level" });
     }
     res.json(questions.map(withResolvedLanguage));
-  } catch (err) {
-    console.error(err);
+  } catch (_err) {
     res.status(500).json({ error: "Server error" });
   }
 };
 
 // GET /api/questions/:level/:id
 exports.getQuestionByLevel = async (req, res) => {
-  const { level, id } = req.params;
   try {
+    const parsed = z
+      .object({
+        level: z.enum(["easy", "medium", "hard"]),
+        id: z.coerce.number().int().positive(),
+      })
+      .safeParse(req.params);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid question request" });
+    }
+
+    const { level, id } = parsed.data;
     const question = await Question.findOne({ level, id });
     if (!question) {
       return res.status(404).json({ error: "Question not found" });
     }
     res.json(withResolvedLanguage(question));
-  } catch (err) {
-    console.error(err);
+  } catch (_err) {
     res.status(500).json({ error: "Server error" });
   }
 };
 
 // POST /api/questions/submit
 exports.submitHandler = async (req, res) => {
-  const { id, code, level, questionId } = req.body;
-
   try {
+    const parsed = z
+      .object({
+        id: z.coerce.number().int().positive().optional(),
+        code: z.string().min(1).max(50000),
+        level: z.enum(["easy", "medium", "hard"]).optional(),
+        questionId: z.string().optional(),
+      })
+      .refine(
+        (value) =>
+          (value.questionId && mongoose.Types.ObjectId.isValid(value.questionId)) ||
+          (value.id !== undefined && value.level),
+        { message: "A valid question reference is required." }
+      )
+      .safeParse(req.body || {});
+
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0]?.message || "Invalid submission" });
+    }
+
+    const { id, code, level, questionId } = parsed.data;
     let question = null;
 
     if (questionId) {
@@ -107,8 +140,7 @@ exports.submitHandler = async (req, res) => {
       message: "Incorrect. Try again!",
       correctAnswer: expectedAnswer,
     });
-  } catch (err) {
-    console.error(err);
+  } catch (_err) {
     res.status(500).json({ message: "Server error." });
   }
 };

@@ -2,12 +2,28 @@
 
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
+const crypto = require("crypto");
+const { z } = require("zod");
 const User = require("../models/User");
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.googleLogin = async (req, res) => {
   try {
-    const { token } = req.body;
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.JWT_SECRET) {
+      return res.status(500).json({ message: "Authentication service unavailable" });
+    }
+
+    const parsed = z
+      .object({
+        token: z.string().min(20, "Invalid Google login token").max(4096, "Invalid Google login token"),
+      })
+      .safeParse(req.body || {});
+
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.issues[0]?.message || "Invalid Google login token" });
+    }
+
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const { token } = parsed.data;
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -15,41 +31,43 @@ exports.googleLogin = async (req, res) => {
 
     const payload = ticket.getPayload();
     const { sub, email, name } = payload;
+    if (!sub || !email || !name) {
+      return res.status(400).json({ message: "Invalid Google account data" });
+    }
     
-    // 💡 Step 1: Find user by a unique Google identifier (email is a good choice)
-    let user = await User.findOne({ email: email }); // Assuming you added an 'email' field to the User model (see below)
+    let user = await User.findOne({ $or: [{ googleId: sub }, { email }] });
 
     if (!user) {
-      // If the user doesn't exist, create a new one.
-      
-      // 💡 Step 2: Use 'name' for the display username. 
-      //    Note: If 'name' is already taken, you'll need logic to handle it (e.g., name + last 4 digits of sub)
-      let displayUsername = name; 
-      
-      // Basic check if the chosen username is already taken by a traditional user
+      let displayUsername = String(name).replace(/[^A-Za-z0-9_]/g, "_").replace(/_+/g, "_").slice(0, 24) || "user";
       const existingUser = await User.findOne({ username: displayUsername });
       if (existingUser) {
-          // Fallback: Use name + a unique suffix
-          displayUsername = `${name}_${sub.slice(-4)}`; 
+          displayUsername = `${displayUsername.slice(0, 19)}_${sub.slice(-4)}`;
       }
       
       user = await User.create({ 
         username: displayUsername, 
-        email: email, // Save the email for unique identification
-        password: sub, // dummy password
+        email,
+        googleId: sub,
+        role: "user",
+        password: crypto.randomBytes(24).toString("hex"),
       });
+    } else if (!user.googleId) {
+      user.googleId = sub;
+      await user.save();
     }
 
-    // Generate JWT and send the display username back
     const myToken = jwt.sign(
       { id: user._id, username: user.username },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.json({ token: myToken, username: user.username });
-  } catch (err) {
-    console.error("Google login error:", err);
-    res.status(400).json({ message: "Invalid Google token or account error" });
+    res.json({
+      token: myToken,
+      username: user.username,
+      redirectTo: user.role === "admin" ? "/dashboard/internal" : "/challenges",
+    });
+  } catch (_err) {
+    res.status(400).json({ message: "Login failed" });
   }
 };

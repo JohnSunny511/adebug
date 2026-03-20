@@ -1,17 +1,60 @@
 const express = require("express");
 const axios = require("axios");
+const { z } = require("zod");
+const { authenticateUser, requireAdmin } = require("../middleware/authMiddleware");
+const { sanitizeFreeText, sanitizeText } = require("../utils/security");
 
 const router = express.Router();
 const CHATBOT_SERVICE_URL = process.env.CHATBOT_SERVICE_URL || "http://localhost:8000";
 
 function handleProxyError(error, res) {
   if (error.response) {
-    return res.status(error.response.status).json(error.response.data);
+    const status = Number(error.response.status) || 502;
+    if (status >= 500) {
+      return res.status(502).json({ error: "Chatbot service is unavailable." });
+    }
+
+    const message =
+      error.response.data?.message ||
+      error.response.data?.detail ||
+      "Chatbot request failed.";
+    return res.status(status).json({ error: message });
   }
 
-  console.error("Chatbot admin proxy error:", error.message);
   return res.status(502).json({ error: "Chatbot service is unavailable." });
 }
+
+async function forwardAddText(text) {
+  try {
+    return await axios.post(`${CHATBOT_SERVICE_URL}/add`, { text });
+  } catch (error) {
+    if (error.response?.status !== 422) {
+      throw error;
+    }
+  }
+
+  try {
+    return await axios.post(`${CHATBOT_SERVICE_URL}/add`, null, {
+      params: { text },
+    });
+  } catch (error) {
+    if (error.response?.status !== 422) {
+      throw error;
+    }
+  }
+
+  return axios.post(
+    `${CHATBOT_SERVICE_URL}/add`,
+    new URLSearchParams({ text }).toString(),
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+}
+
+router.use(authenticateUser, requireAdmin);
 
 router.post("/upload", async (req, res) => {
   try {
@@ -37,7 +80,19 @@ router.post("/upload", async (req, res) => {
 
 router.post("/add", async (req, res) => {
   try {
-    const response = await axios.post(`${CHATBOT_SERVICE_URL}/add`, req.body);
+    const parsed = z
+      .object({
+        text: z.string().min(1).max(20000),
+      })
+      .safeParse({
+        text: sanitizeFreeText(req.body?.text, { maxLength: 20000 }),
+      });
+
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message || "Text is required." });
+    }
+
+    const response = await forwardAddText(parsed.data.text);
     return res.status(response.status).json(response.data);
   } catch (error) {
     return handleProxyError(error, res);
@@ -55,7 +110,19 @@ router.get("/list", async (_req, res) => {
 
 router.delete("/delete/:name", async (req, res) => {
   try {
-    const safeName = encodeURIComponent(req.params.name);
+    const parsed = z
+      .object({
+        name: z.string().min(1).max(255),
+      })
+      .safeParse({
+        name: sanitizeText(req.params.name, { maxLength: 255, allowNewlines: false }),
+      });
+
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid document name." });
+    }
+
+    const safeName = encodeURIComponent(parsed.data.name);
     const response = await axios.delete(`${CHATBOT_SERVICE_URL}/delete/${safeName}`);
     return res.status(response.status).json(response.data);
   } catch (error) {

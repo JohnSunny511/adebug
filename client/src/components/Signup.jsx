@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const signup = async () => {
     try {
@@ -14,11 +16,11 @@ function Signup() {
         password,
       });
       alert(res.data.message);
+      navigate("/login");
     } catch (err) {
-  console.error("Signup error:", err); // 👈 shows error in browser console
-  const msg = err.response?.data?.message || err.message || "Unknown error";
-  alert("Signup failed: " + msg);
-}
+      const msg = err.response?.data?.message || err.message || "Unknown error";
+      alert("Signup failed: " + msg);
+    }
 
   };
 

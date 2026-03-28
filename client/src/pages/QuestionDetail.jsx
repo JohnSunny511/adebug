@@ -5,6 +5,7 @@ import axios from "axios";
 import Editor from "@monaco-editor/react";
 import { countChanges } from "../utils/countCodeChanges";
 import { executeCode } from "../utils/executeCode";
+import { API_BASE_URL } from "../config/api";
 
 function QuestionDetail() {
   const { level, id } = useParams();
@@ -16,6 +17,7 @@ function QuestionDetail() {
   const [username, setUsername] = useState("");
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
   const [chatMessages, setChatMessages] = useState([
     {
       role: "assistant",
@@ -54,18 +56,28 @@ function QuestionDetail() {
 
   useEffect(() => {
     const fetchQuestion = async () => {
+      setPageError("");
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/api/questions/${level}/${id}`, {
+        const res = await axios.get(`${API_BASE_URL}/api/questions/${level}/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         setQuestion(res.data);
         setOriginalCode(res.data.code);
-      } catch (_err) {
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("username");
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setPageError("Unable to load this question right now.");
       }
     };
     fetchQuestion();
-  }, [level, id]);
+  }, [level, id, navigate]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,7 +101,7 @@ function QuestionDetail() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/questions/submit",
+        `${API_BASE_URL}/api/questions/submit`,
         {
           questionId: question._id,
           id: question.id,
@@ -118,7 +130,7 @@ function QuestionDetail() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/chatbot/query", {
+      const response = await fetch(`${API_BASE_URL}/api/chatbot/query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,6 +173,14 @@ function QuestionDetail() {
     window.location.href = "/login";
   };
 
+  if (pageError) {
+    return (
+      <p style={{ textAlign: "center", color: "#fca5a5", padding: "2rem" }}>
+        {pageError}
+      </p>
+    );
+  }
+
   if (!question) return <p>Loading question...</p>;
 
   return (
@@ -169,7 +189,7 @@ function QuestionDetail() {
         minHeight: "100vh",
         background: "#0f172a",
         color: "#f1f5f9",
-        padding: "2rem",
+        padding: "clamp(16px, 4vw, 32px)",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
@@ -178,8 +198,10 @@ function QuestionDetail() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: "0.75rem",
           marginBottom: ".4rem",
-          paddingLeft: "clamp(56px, 10vw, 72px)",
+          paddingLeft: "clamp(44px, 9vw, 72px)",
         }}
       >
         <span>
@@ -205,7 +227,7 @@ function QuestionDetail() {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          paddingLeft: "clamp(56px, 10vw, 72px)",
+          paddingLeft: "clamp(44px, 9vw, 72px)",
           marginBottom: "1rem",
         }}
       >
@@ -229,15 +251,17 @@ function QuestionDetail() {
       <div
         style={{
           display: "flex",
-          gap: "9rem",
-          alignItems: "stretch",
+          gap: "clamp(16px, 4vw, 36px)",
+          alignItems: "flex-start",
           flexWrap: "wrap",
+          maxWidth: "1200px",
+          margin: "0 auto",
         }}
       >
-        <div style={{ flex: "0 1 720px", minWidth: "340px" , paddingLeft: "85px"}}>
+        <div style={{ flex: "1 1 680px", minWidth: "min(100%, 320px)", paddingLeft: "clamp(0px, 2vw, 18px)", width: "100%" }}>
           <h1
             style={{
-              fontSize: "2.25rem",
+              fontSize: "clamp(1.7rem, 5vw, 2.25rem)",
               fontWeight: "bold",
               marginBottom: ".5rem",
               color: "#f8fafc",
@@ -277,7 +301,7 @@ function QuestionDetail() {
             />
           </div>
 
-          <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+          <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
             <button
               style={{
                 padding: "0.6rem 1.2rem",
@@ -334,10 +358,8 @@ function QuestionDetail() {
 
         <aside
           style={{
-            flex: "0 1 360px",
-            minWidth: "300px",
-            position: "relative",
-            top: "24px",
+            flex: "1 1 320px",
+            minWidth: "min(100%, 300px)",
             backgroundColor: "#1e293b",
             border: "2px solid #334155",
             borderRadius: "0.75rem",
@@ -345,7 +367,8 @@ function QuestionDetail() {
             padding: "1rem",
             display: "flex",
             flexDirection: "column",
-            maxHeight: "590px",
+            maxHeight: "620px",
+            width: "100%",
           }}
         >
           <h2 style={{ margin: 0, marginBottom: "0.8rem", fontSize: "1.1rem", color: "#f8fafc" }}>
@@ -389,14 +412,14 @@ function QuestionDetail() {
             {chatLoading && <div style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Thinking...</div>}
             <div ref={chatEndRef} />
           </div>
-          <form onSubmit={askAI} style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+          <form onSubmit={askAI} style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
             <input
               type="text"
               value={chatInput}
               onChange={(event) => setChatInput(event.target.value)}
               placeholder="Ask about this bug..."
               style={{
-                flex: 1,
+                flex: "1 1 220px",
                 backgroundColor: "#0f172a",
                 border: "1px solid #334155",
                 borderRadius: "0.45rem",
@@ -414,6 +437,7 @@ function QuestionDetail() {
                 border: "none",
                 borderRadius: "0.45rem",
                 padding: "0.55rem 0.9rem",
+                minWidth: "110px",
                 cursor: chatLoading || !chatInput.trim() ? "not-allowed" : "pointer",
               }}
             >

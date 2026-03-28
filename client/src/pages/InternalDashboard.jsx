@@ -13,7 +13,8 @@ function InternalDashboard() {
     border: "1px solid #334155",
     borderRadius: "12px",
     padding: "1.25rem",
-    width: "280px",
+    width: "min(100%, 280px)",
+    flex: "1 1 260px",
     color: "#f8fafc",
     textAlign: "left",
   };
@@ -24,12 +25,12 @@ function InternalDashboard() {
         minHeight: "100vh",
         background: "#020617",
         color: "#f8fafc",
-        padding: "2rem",
+        padding: "clamp(16px, 4vw, 32px)",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
       <div style={{ maxWidth: "920px", margin: "0 auto" }}>
-        <h1 style={{ marginTop: 0 }}>Internal Dashboard</h1>
+        <h1 style={{ marginTop: 0, fontSize: "clamp(1.6rem, 4vw, 2.4rem)" }}>Internal Dashboard</h1>
         <p style={{ color: "#94a3b8", maxWidth: "640px" }}>
           Restricted admin workspace for internal content and chatbot controls.
         </p>

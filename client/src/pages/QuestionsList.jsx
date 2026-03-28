@@ -2,28 +2,40 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 function QuestionsList() {
   const { level } = useParams(); // easy, medium, hard
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchQuestions = async () => {
+      setErrorMessage("");
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/api/questions/${level}`, {
+        const res = await axios.get(`${API_BASE_URL}/api/questions/${level}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         setQuestions(res.data);
-      } catch (_err) {
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("username");
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setErrorMessage("Unable to load questions right now.");
       } finally {
         setLoading(false);
       }
     };
     fetchQuestions();
-  }, [level]);
+  }, [level, navigate]);
 
   if (loading) return <p style={{ textAlign: "center", color: "#94a3b8" }}>Loading {level} questions...</p>;
 
@@ -35,7 +47,7 @@ function QuestionsList() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: "2rem",
+      padding: "clamp(16px, 4vw, 32px)",
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     }}>
       <div
@@ -51,7 +63,7 @@ function QuestionsList() {
         }}
       >
         <h1 style={{
-          fontSize: "2.5rem",
+          fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
           fontWeight: "bold",
           margin: 0,
           textTransform: "capitalize",
@@ -77,7 +89,9 @@ function QuestionsList() {
         </button>
       </div>
 
-      {questions.length === 0 ? (
+      {errorMessage ? (
+        <p style={{ color: "#fca5a5", fontSize: "1rem" }}>{errorMessage}</p>
+      ) : questions.length === 0 ? (
         <p style={{ color: "#94a3b8", fontSize: "1rem" }}>No questions found.</p>
       ) : (
         <ul

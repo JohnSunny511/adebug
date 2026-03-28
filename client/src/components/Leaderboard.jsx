@@ -1,17 +1,32 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 function Leaderboard() {
   const [users, setUsers] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    axios.get("http://localhost:5000/api/leaderboard", {
+    setErrorMessage("");
+    axios.get(`${API_BASE_URL}/api/leaderboard`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(res => setUsers(res.data))
-      .catch(() => {});
-  }, []);
+      .catch((error) => {
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("username");
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setErrorMessage("Unable to load leaderboard right now.");
+      });
+  }, [navigate]);
 
   return (
     <div style={{
@@ -21,12 +36,12 @@ function Leaderboard() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      padding: "2rem",
+      padding: "clamp(16px, 4vw, 32px)",
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     }}>
 
       <h1 style={{
-        fontSize: "2.5rem",
+        fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
         fontWeight: "bold",
         marginBottom: "2rem",
         color: "#f8fafc"
@@ -58,7 +73,11 @@ function Leaderboard() {
         </div>
 
         {/* Users */}
-        {users.length === 0 ? (
+        {errorMessage ? (
+          <p style={{ textAlign: "center", padding: "20px", color: "#fca5a5" }}>
+            {errorMessage}
+          </p>
+        ) : users.length === 0 ? (
           <p style={{ textAlign: "center", padding: "20px", color: "#94a3b8" }}>
             No users yet.
           </p>

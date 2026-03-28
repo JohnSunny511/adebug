@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 function AdminRoute({ children }) {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ function AdminRoute({ children }) {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/dashboard/internal/access", {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/internal/access`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

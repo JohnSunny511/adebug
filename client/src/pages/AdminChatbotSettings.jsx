@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE = "http://localhost:5000/api/dashboard/internal/chatbot";
+const API_BASE = `${API_BASE_URL}/api/dashboard/internal/chatbot`;
 
 function AdminChatbotSettings() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -181,12 +182,12 @@ function AdminChatbotSettings() {
         minHeight: "100vh",
         background: "#0f172a",
         color: "#f1f5f9",
-        padding: "2rem",
+        padding: "clamp(16px, 4vw, 32px)",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
       <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-        <h1 style={{ marginTop: 0, marginBottom: "1rem", fontSize: "2rem" }}>Admin Chatbot Settings</h1>
+        <h1 style={{ marginTop: 0, marginBottom: "1rem", fontSize: "clamp(1.5rem, 4vw, 2rem)" }}>Admin Chatbot Settings</h1>
 
         <div
           style={{

@@ -57,12 +57,16 @@ app.use("/api/dashboard/internal/chatbot", chatbotAdminRoutes);
 app.use("/api/dashboard/internal/questions", adminQuestionRoutes);
 
 // Connect DB
-connectDB(); // ✅ call here
+connectDB().catch(() => {
+  console.error("❌ MongoDB connection error");
+});
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}
 
 app.post("/api/execute", authenticateUser, executeRateLimit, async (req, res) => {
   const parsed = z
@@ -127,3 +131,5 @@ app.post("/api/execute", authenticateUser, executeRateLimit, async (req, res) =>
     });
   }
 });
+
+module.exports = app;

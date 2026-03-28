@@ -4,6 +4,7 @@ import { countChanges } from '../utils/countCodeChanges';
 import Editor from "@monaco-editor/react";
 import { executeCode } from "../utils/executeCode";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 function Challenges() {
     const [question, setQuestion] = useState(null);
@@ -44,7 +45,7 @@ function Challenges() {
         try {
             const token = localStorage.getItem("token");
 
-            const res = await axios.post('http://localhost:5000/api/questions/submit', {
+            const res = await axios.post(`${API_BASE_URL}/api/questions/submit`, {
                 id: question.id,
                 code: question.code,
                 level: question.level,
@@ -70,11 +71,11 @@ function Challenges() {
     ];
 
     return (
-        <div style={{ minHeight: "100vh", backgroundColor: "#1f2937", color: "white", padding: "20px", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
+        <div style={{ minHeight: "100vh", backgroundColor: "#1f2937", color: "white", padding: "clamp(16px, 4vw, 20px)", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-                <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}> Debug Quest</h1>
-                <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "30px" }}>
+                <h1 style={{ fontSize: "clamp(1.6rem, 4vw, 2rem)", fontWeight: "bold", margin: 0 }}> Debug Quest</h1>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "8px", width: "min(100%, 420px)" }}>
                     👋 <strong>{username}</strong>{" "}
                     <button
                         onClick={() => navigate("/leaderboard")}
@@ -87,7 +88,6 @@ function Challenges() {
                             cursor: "pointer",
                             fontWeight: "bold",
                             fontSize: "0.85rem",
-                            marginRight: "8px",
                         }}
                     >
                         Leaderboard
@@ -103,7 +103,6 @@ function Challenges() {
                             cursor: "pointer",
                             fontWeight: "bold",
                             fontSize: "0.85rem",
-                            marginRight: "8px",
                         }}
                     >
                         Learn
@@ -127,7 +126,8 @@ function Challenges() {
         background: "linear-gradient(145deg, #1f1f2e, #11111e)",
         borderRadius: "20px",
         padding: "25px",
-        width: "220px",
+        width: "min(100%, 280px)",
+        flex: "1 1 220px",
         boxShadow: "0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(139,92,246,0.4)",
         display: "flex",
         flexDirection: "column",
@@ -193,8 +193,8 @@ function Challenges() {
 
             {/* Question Section */}
             {question && (
-                <div style={{ backgroundColor: "#374151", padding: "20px", borderRadius: "16px", boxShadow: "0 4px 15px rgba(0,0,0,0.3)" }}>
-                    <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "10px" }}>{question.title}</h2>
+                <div style={{ backgroundColor: "#374151", padding: "clamp(16px, 4vw, 20px)", borderRadius: "16px", boxShadow: "0 4px 15px rgba(0,0,0,0.3)", width: "100%", maxWidth: "960px", margin: "0 auto" }}>
+                    <h2 style={{ fontSize: "clamp(1.4rem, 4vw, 1.8rem)", fontWeight: "bold", marginBottom: "10px" }}>{question.title}</h2>
                     <p style={{ color: "#9ca3af", marginBottom: "15px" }}><strong>Language:</strong> {question.language}</p>
 
                     <Editor

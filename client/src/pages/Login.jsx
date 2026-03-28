@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google"; // Import GoogleLogin
+import { API_BASE_URL } from "../config/api";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -15,7 +16,7 @@ function Login() {
   // ------------------------------------
   const handleTraditionalLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         username,
         password,
       });
@@ -33,7 +34,7 @@ function Login() {
   // ------------------------------------
   const handleGoogleLogin = async (credentialResponse) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/google-login", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/google-login`, {
         token: credentialResponse.credential,
       });
       localStorage.setItem("token", res.data.token);
@@ -53,20 +54,22 @@ function Login() {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    height: "100vh",
+    minHeight: "100vh",
     backgroundColor: "#f4f4f4",
     fontFamily: "sans-serif",
+    padding: "clamp(16px, 4vw, 24px)",
+    boxSizing: "border-box",
   };
 
   const formStyle = {
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    padding: "2rem",
+    padding: "clamp(1.25rem, 4vw, 2rem)",
     borderRadius: "8px",
     backgroundColor: "#fff",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    width: "300px",
+    width: "min(100%, 360px)",
   };
 
   const inputStyle = {

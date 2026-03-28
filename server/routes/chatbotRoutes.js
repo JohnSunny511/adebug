@@ -6,7 +6,7 @@ const { rateLimit } = require("../middleware/rateLimit");
 const { sanitizeFreeText } = require("../utils/security");
 
 const router = express.Router();
-const CHATBOT_SERVICE_URL = process.env.CHATBOT_SERVICE_URL || "http://localhost:8000";
+const CHATBOT_SERVICE_URL = process.env.CHATBOT_SERVICE_URL;
 const chatbotQueryRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 10,

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE = "http://localhost:5000/api/dashboard/internal/questions";
+const API_BASE = `${API_BASE_URL}/api/dashboard/internal/questions`;
 
 function AdminQuestionManager() {
   const [questionName, setQuestionName] = useState("");
@@ -140,7 +141,7 @@ function AdminQuestionManager() {
         minHeight: "100vh",
         background: "#0f172a",
         color: "#f1f5f9",
-        padding: "2rem",
+        padding: "clamp(16px, 4vw, 32px)",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
@@ -155,7 +156,7 @@ function AdminQuestionManager() {
             flexWrap: "wrap",
           }}
         >
-          <h1 style={{ margin: 0, fontSize: "2rem" }}>Admin Question Manager</h1>
+          <h1 style={{ margin: 0, fontSize: "clamp(1.5rem, 4vw, 2rem)" }}>Admin Question Manager</h1>
           <button
             type="button"
             onClick={() => setShowAddForm((prev) => !prev)}

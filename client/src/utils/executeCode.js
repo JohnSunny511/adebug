@@ -1,5 +1,6 @@
 // executeCode.js
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 // Judge0 language IDs
 const LANGUAGE_MAP = {
@@ -30,7 +31,7 @@ export async function executeCode(language, code) {
 
   try {
     const token = localStorage.getItem("token");
-    const response = await axios.post("http://localhost:5000/api/execute", {
+    const response = await axios.post(`${API_BASE_URL}/api/execute`, {
       language_id,
       code,
     }, {

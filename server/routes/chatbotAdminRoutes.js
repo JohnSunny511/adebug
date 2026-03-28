@@ -5,7 +5,7 @@ const { authenticateUser, requireAdmin } = require("../middleware/authMiddleware
 const { sanitizeFreeText, sanitizeText } = require("../utils/security");
 
 const router = express.Router();
-const CHATBOT_SERVICE_URL = process.env.CHATBOT_SERVICE_URL || "http://localhost:8000";
+const CHATBOT_SERVICE_URL = process.env.CHATBOT_SERVICE_URL;
 
 function handleProxyError(error, res) {
   if (error.response) {

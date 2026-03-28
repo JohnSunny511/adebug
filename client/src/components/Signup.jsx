@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 function Signup() {
   const [username, setUsername] = useState("");
@@ -11,7 +12,7 @@ function Signup() {
 
   const signup = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/signup`, {
         username,
         password,
       });
@@ -29,20 +30,22 @@ function Signup() {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    height: "100vh",
+    minHeight: "100vh",
     backgroundColor: "#f4f4f4",
     fontFamily: "sans-serif",
+    padding: "clamp(16px, 4vw, 24px)",
+    boxSizing: "border-box",
   };
 
   const formStyle = {
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    padding: "2rem",
+    padding: "clamp(1.25rem, 4vw, 2rem)",
     borderRadius: "8px",
     backgroundColor: "#fff",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    width: "300px",
+    width: "min(100%, 360px)",
   };
 
   const inputStyle = {

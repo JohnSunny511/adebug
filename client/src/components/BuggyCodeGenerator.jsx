@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { countChanges } from "../utils/countCodeChanges";
 import { executeCode } from "../utils/executeCode";
+import { API_BASE_URL } from "../config/api";
 
-
-const AI_API_URL = "http://localhost:5000/api/ai/generate";
+const AI_API_URL = `${API_BASE_URL}/api/ai/generate`;
 
 export default function BuggyCodeGenerator() {
   const [question, setQuestion] = useState(null);
